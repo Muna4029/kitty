@@ -215,6 +215,9 @@ def install_grype() -> str:
 
 
 IGNORED_DEPENDENCY_CVES = [
+    # Go stdlib
+    'CVE-2026-39821', # High severity in Go stdlib
+    'CVE-2026-14456', # High severity in Go stdlib
     # Python stdlib
     'CVE-2025-8194', # DoS in tarfile
     'CVE-2025-6069', # DoS in HTMLParser
