@@ -25,7 +25,6 @@ class SerializedPair(TypedDict, total=False):
 
 
 class Pair:
-
     def __init__(self, horizontal: bool = True):
         self.horizontal = horizontal
         self.one: Pair | int | None = None
@@ -59,12 +58,14 @@ class Pair:
             ans = Pair()
             ans.unserialize(x, map_window_id)
             return ans if ans.one or ans.two else None
+
         self.one = unserialize(s.get('one'))
         self.two = unserialize(s.get('two'))
 
     def __repr__(self) -> str:
         return 'Pair(horizontal={}, bias={:.2f}, one={}, two={}, between_borders={})'.format(
-                self.horizontal, self.bias, self.one, self.two, self.between_borders)
+            self.horizontal, self.bias, self.one, self.two, self.between_borders
+        )
 
     def all_window_ids(self) -> Generator[int, None, None]:
         if self.one is not None:
@@ -190,12 +191,7 @@ class Pair:
                     final_pair = qp
         return final_pair
 
-    def apply_window_geometry(
-        self, window_id: int,
-        window_geometry: WindowGeometry,
-        id_window_map: dict[int, WindowGroup],
-        layout_object: Layout
-    ) -> None:
+    def apply_window_geometry(self, window_id: int, window_geometry: WindowGeometry, id_window_map: dict[int, WindowGroup], layout_object: Layout) -> None:
         wg = id_window_map[window_id]
         wg.set_geometry(window_geometry)
         layout_object.blank_rects.extend(blank_rects_for_window(window_geometry))
@@ -235,12 +231,7 @@ class Pair:
             ans += lgd.cell_height
         return ans
 
-    def layout_pair(
-        self,
-        left: int, top: int, width: int, height: int,
-        id_window_map: dict[int, WindowGroup],
-        layout_object: Layout
-    ) -> None:
+    def layout_pair(self, left: int, top: int, width: int, height: int, id_window_map: dict[int, WindowGroup], layout_object: Layout) -> None:
         self.between_borders = []
         self.left, self.top, self.width, self.height = left, top, width, height
         bw = self.effective_border(id_window_map) if lgd.draw_minimal_borders else 0
@@ -325,7 +316,7 @@ class Pair:
 
     def set_bias(self, window_id: int, bias: int) -> None:
         b = max(0, min(bias, 100)) / 100
-        self.bias = b if window_id == self.one else (1. - b)
+        self.bias = b if window_id == self.one else (1.0 - b)
 
     def modify_size_of_child(self, which: int, increment: float, is_horizontal: bool, layout_object: 'Splits') -> bool:
         if is_horizontal == self.horizontal and not self.is_redundant:
@@ -392,7 +383,6 @@ class Pair:
                             yield edges._replace(top=extent.start, bottom=extent.end)
 
     def neighbors_for_window(self, window_id: int, ans: NeighborsMap, layout_object: 'Splits', all_windows: WindowList) -> None:
-
         def quadrant(is_horizontal: bool, is_first: bool) -> tuple[EdgeLiteral, EdgeLiteral]:
             if is_horizontal:
                 if is_first:
@@ -407,9 +397,7 @@ class Pair:
         def extend(other: Union[int, 'Pair', None], edge: EdgeLiteral, which: EdgeLiteral) -> None:
             if not ans[which] and other:
                 if isinstance(other, Pair):
-                    neighbors = (
-                        w for w in other.edge_windows(edge)
-                        if is_neighbouring_geometry(geometries[w], geometries[window_id], which))
+                    neighbors = (w for w in other.edge_windows(edge) if is_neighbouring_geometry(geometries[w], geometries[window_id], which))
                     ans[which].extend(neighbors)
                 else:
                     ans[which].append(other)
@@ -461,7 +449,6 @@ class Pair:
 
 
 class SplitsLayoutOpts(LayoutOpts):
-
     default_axis_is_horizontal: bool | None = True
 
     def __init__(self, data: dict[str, str]):
@@ -567,13 +554,7 @@ class Splits(Layout):
         if bias is not None:
             p.bias = bias
 
-    def modify_size_of_window(
-        self,
-        all_windows: WindowList,
-        window_id: int,
-        increment: float,
-        is_horizontal: bool = True
-    ) -> bool:
+    def modify_size_of_window(self, all_windows: WindowList, window_id: int, increment: float, is_horizontal: bool = True) -> bool:
         grp = all_windows.group_for_window(window_id)
         if grp is None:
             return False
@@ -677,11 +658,11 @@ class Splits(Layout):
                             if which in ('left', 'top'):
                                 if pair.one != wg.id:
                                     pair.one, pair.two = pair.two, pair.one
-                                    pair.bias = 1. - pair.bias
+                                    pair.bias = 1.0 - pair.bias
                             else:
                                 if pair.one == wg.id:
                                     pair.one, pair.two = pair.two, pair.one
-                                    pair.bias = 1. - pair.bias
+                                    pair.bias = 1.0 - pair.bias
                             return True
                     else:
                         self.remove_windows(wg.id)
